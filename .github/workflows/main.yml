@@ -1,0 +1,31 @@
+name: Build and Export Docker Image
+
+# 触发条件：当你推代码，或者手动点击运行的时候
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 使用 GitHub 官方提供的免费 Linux 服务器
+    steps:
+      # 1. 获取你的代码库
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. 在云端构建 Docker 镜像
+      - name: Build Docker Image
+        run: docker build -t macrel:v1 .
+
+      # 3. 将镜像打包成 tar 离线文件
+      - name: Save Docker Image to Tarball
+        run: docker save -o macrel-v1.tar macrel:v1
+
+      # 4. 把打包好的文件上传，供你下载
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macrel-offline-image
+          path: macrel-v1.tar
+          retention-days: 1 # 文件保留 1 天就够了
